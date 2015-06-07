@@ -24,7 +24,7 @@ var (
 
 // Controller provides a web-counter service
 type Controller struct {
-	counts map[string]int
+	counts map[string]map[string]int
 	rects  map[byte]image.Rectangle
 	img    image.Image
 	sync.Mutex
@@ -73,7 +73,7 @@ func New() (*Controller, error) {
 	if err != nil {
 		return nil, err
 	}
-	t := &Controller{counts: make(map[string]int), img: img, rects: make(map[byte]image.Rectangle)}
+	t := &Controller{counts: make(map[string]map[string]int), img: img, rects: make(map[byte]image.Rectangle)}
 	for i, ch := range srcImageChars {
 		x0 := i % srcImageWidth * glyphSize
 		x1 := x0 + glyphSize - 1
@@ -85,11 +85,16 @@ func New() (*Controller, error) {
 	return t, nil
 }
 
-// Get retrieves the count and increments it by one
-func (c *Controller) Get(id string) int {
+// Get retrieves the count by referrer and increments it by one
+func (c *Controller) Get(id string, referer string) int {
+	var count int
 	c.Lock()
-	count := c.counts[id]
-	c.counts[id] = count + 1
+	_, found := c.counts[id]
+	if !found {
+		c.counts[id] = make(map[string]int)
+	}
+	c.counts[id][referer]++
+	count = c.counts[id][referer]
 	c.Unlock()
 	return count
 }
@@ -125,6 +130,7 @@ func (c *Controller) render(w http.ResponseWriter, count int, suffix string) {
 
 func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	id := strings.Trim(r.URL.Path, "/")
+	referer := r.Header.Get("Referer")
 	if id == "" || id == "favicon.ico" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -138,7 +144,7 @@ func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	switch r.Method {
 	case "GET":
-		count := c.Get(id)
+		count := c.Get(id, referer)
 		c.render(w, count, suffix)
 	case "DELETE":
 		c.Delete(id)

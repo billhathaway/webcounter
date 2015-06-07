@@ -20,8 +20,13 @@ func init() {
 	server = httptest.NewServer(wc)
 }
 
-func expectCount(url string, val int) error {
-	resp, err := http.Get(url)
+func expectCount(url string, referer string, val int) error {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Referer", referer)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("error making request to %s - %s\n", url, err)
 	}
@@ -43,7 +48,7 @@ func TestWebcounterValues(t *testing.T) {
 	id := "aa.txt"
 	url := server.URL + "/" + id
 	for i := 0; i < 3; i++ {
-		if err := expectCount(url, i); err != nil {
+		if err := expectCount(url, "", i+1); err != nil {
 			t.Error(err)
 		} else {
 			t.Logf("value %d found as expected\n", i)
@@ -62,7 +67,7 @@ func TestWebcounterValues(t *testing.T) {
 	}
 	t.Logf("reset counter for %s\n", id)
 	for i := 0; i < 11; i++ {
-		if err := expectCount(url, i); err != nil {
+		if err := expectCount(url, "", i+1); err != nil {
 			t.Error(err)
 		} else {
 			t.Logf("value %d found as expected\n", i)
@@ -94,6 +99,26 @@ func TestSuffixes(t *testing.T) {
 			t.Errorf("expected Content-type %s for %s but received %s\n", test.contentType, url, resp.Header.Get("Content-type"))
 		} else {
 			t.Logf("content-type ok for suffix %q\n", test.suffix)
+		}
+	}
+}
+
+func TestReferers(t *testing.T) {
+	tests := []struct {
+		referer string
+		count   int
+	}{
+		{"", 1},
+		{"", 2},
+		{"google.com", 1},
+		{"google.com", 2},
+		{"", 3},
+	}
+	url := server.URL + "/referer.txt"
+	for _, test := range tests {
+		err := expectCount(url, test.referer, test.count)
+		if err != nil {
+			t.Error(err)
 		}
 	}
 }

@@ -19,6 +19,23 @@ func init() {
 	}
 	server = httptest.NewServer(wc)
 }
+func TestInvalidRequests(t *testing.T) {
+	urls := []string{"/", "/favicon.ico"}
+	for _, url := range urls {
+		resp, err := http.Get(server.URL + url)
+		if err != nil {
+			t.Errorf("error hitting %s - %s\n", url, err)
+			continue
+		}
+		if resp.StatusCode != http.StatusNotFound {
+			t.Errorf("expected 404 for %s but received %d\n", url, resp.StatusCode)
+			continue
+		}
+		t.Logf("received 404 as expected for %s\n", url)
+		resp.Body.Close()
+	}
+
+}
 
 func expectCount(url string, referer string, val int) error {
 	req, err := http.NewRequest("GET", url, nil)

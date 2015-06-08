@@ -28,12 +28,22 @@ func TestInvalidRequests(t *testing.T) {
 			continue
 		}
 		if resp.StatusCode != http.StatusNotFound {
-			t.Errorf("expected 404 for %s but received %d\n", url, resp.StatusCode)
+			t.Errorf("expected %d for %s but received %d\n", http.StatusNotFound, url, resp.StatusCode)
 			continue
 		}
 		t.Logf("received 404 as expected for %s\n", url)
 		resp.Body.Close()
 	}
+	url := server.URL + "/a.txt"
+	resp, err := http.Post(url, "plain/text", nil)
+	if err != nil {
+		t.Errorf("error hitting %s - %s\n", url, err)
+		return
+	}
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("expected %d for POST but received %d\n", http.StatusBadRequest, resp.StatusCode)
+	}
+	resp.Body.Close()
 
 }
 

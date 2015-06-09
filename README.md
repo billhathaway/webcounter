@@ -1,6 +1,7 @@
 Webcounter challenge
 ==
-[![Build Status](https://travis-ci.org/billhathaway/webcounter.svg?branch=master)](https://travis-ci.org/billhathaway/webcounter)
+[![Build Status](https://travis-ci.org/billhathaway/webcounter.svg?branch=master)](https://travis-ci.org/billhathaway/webcounter)  
+
 This project is based on https://github.com/SDGophers/2015-04-challenge and currently handles:  
 * initial challenge phase
 * extra-credit of supporting multiple image types based on the request suffix (.txt/.jpg/.gif/.png)  

@@ -1,6 +1,9 @@
 Webcounter challenge
 ==
-This project is based on https://github.com/SDGophers/2015-04-challenge and currently does the initial challenge phase and the extra-credit of supporting multiple image types based on the request suffix (.txt/.jpg/.gif/.png).
+This project is based on https://github.com/SDGophers/2015-04-challenge and currently handles:  
+* initial challenge phase
+* extra-credit of supporting multiple image types based on the request suffix (.txt/.jpg/.gif/.png)  
+* 1,000 visitor level of per-referer counts  
 
 The main logic is exposed as a library github.com/billhathaway/webcounter  
 
